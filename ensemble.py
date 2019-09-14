@@ -1,47 +1,45 @@
 import abc
+from random import random
+import numpy as np
+from sklearn.linear_model import LogisticRegression
 
 class Ensemble:
     """
     Base class for ensembling.
     Instances of this class are capable of training and prediction.
-    """
-    @staticmethod
-    def bag(sub_ensembles, splits):
-        return Bag(sub_ensembles, splits)
-
-    @staticmethod
-    def boost(sub_ensemble):
-        return Boost(sub_ensemble)
-
-    @staticmethod
-    def stack(sub_ensembles):
-        return Stack(sub_ensembles)
-    
-    @abc.abstractmethod
-    def fit(self, X, y):
+    """    
+    def fit(self, x, y):
         """
         Trains the ensemble using supplied data.
         """
+        self._fit(x, y)
+
+        # y_hat = self.predict(x)
+
+        # self.variance = self._variance(y, y_hat)
+        # self.bias = self._bias(y, y_hat)
+        # self.mse = self._mse(y, y_hat)
+
+        return self
+    
+    @abc.abstractmethod
+    def _fit(self, x, y):
         pass
 
     @abc.abstractmethod
-    def predict(self, X):
+    def predict(self, x):
         """
         Predicts the labels of supplied data.
         """
         pass
 
-class Bag(Ensemble):
-    def __init__(self, sub_ensembles, splits):
-        self.sub_ensembles = sub_ensembles
-        self.splits = splits
+    def _variance(self, y, y_hat):
+        return [(a)]
+        pass
 
+    def _bias(self):
+        pass
 
-class Boost(Ensemble):
-    def __init__(self, sub_ensemble):
-        self.sub_ensemble = sub_ensemble
-
-
-class Stack(Ensemble):
-    def __init__(self, sub_ensembles):
-        self.sub_ensembles = sub_ensembles
+    def _mse(self):
+        pass
+    
