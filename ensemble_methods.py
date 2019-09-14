@@ -1,57 +1,101 @@
+import numpy as np
+from random import random
+
 from ensemble import Ensemble
 from base_models import *
-import numpy as np
 
 class Bag(Ensemble):
-    def __init__(self, sample_prob, *sub_ensembles):
+    def __init__(self, sample_prob, sub_ensembles):
         self.sample_prob = sample_prob
         self.sub_ensembles = sub_ensembles
+        self.result_type = self.sub_ensembles[0].result_type
     
-    def fit(self, x, y):
+    def _fit(self, x, y, **kwargs):
+        weights = kwargs['sample_weight'] if 'sample_weight' in kwargs else np.ones(len(x))
+        
         def subsample_with_replacement():
             x_sample = []
             y_sample = []
-            for x_i, y_i in zip(x, y):
+            w_sample = []
+
+            for x_i, y_i, w_i in zip(x, y, weights):
                 if random() < self.sample_prob:
                     x_sample.append(x_i)
                     y_sample.append(y_i)
+                    w_sample.append(w_i)
             
-            return np.array(x_sample), np.array(y_sample)
+            return np.array(x_sample), np.array(y_sample), np.array(w_sample)
         
         for ensemble in self.sub_ensembles:
-            x_s, y_s = subsample_with_replacement()
-            ensemble.fit(x_s, y_s)
+            x_s, y_s, w_s = subsample_with_replacement()
+            ensemble.fit(x_s, y_s, sample_weight=w_s)
             
     def predict(self, x):
         preds = np.array([ensemble.predict(x) for ensemble in self.sub_ensembles])
         return np.mean(preds, axis=0)
 
-class Boost(Ensemble):
-    def __init__(self, sub_ensemble, booster):
-        self.sub_ensemble = sub_ensemble
-        self.booster = booster
+class GradientBoost(Ensemble):
+    def __init__(self, sub_ensembles):
+        # Implicit: First sub_ensemble is being boosted
+        self.sub_ensembles = sub_ensembles
+        self.result_type = self.sub_ensembles[0].result_type
     
-    def _fit(self, x, y):
-        pass
+    def _fit(self, x, y, **kwargs):
+        residuals = y
+        self._output_size = len(y[0])
+        for sub_ensemble in self.sub_ensembles:
+            residuals -= sub_ensemble.fit(x, residuals, **kwargs).predict(x)
+    
+    def predict(self, x):
+        preds = np.zeros((len(x), self._output_size))
+        for sub_ensemble in self.sub_ensembles:
+            preds += sub_ensemble.predict(x)
+        
+        return preds
 
+class AdaBoost(Ensemble):
+    def __init__(self, sub_ensembles):
+        self.sub_ensembles = sub_ensembles
+        self.result_type = self.sub_ensembles[0].result_type
+    
+    def _fit(self, x, y, **kwargs):
+        if 'sample_weight' in kwargs:
+            weights = kwargs['sample_weight']
+        else:
+            weights = np.ones(len(y))
+        
+        for ensemble in self.sub_ensembles:
+            preds = ensemble.fit(x, y, sample_weight=weights).predict(x)
+            
+            if self.result_type == 'classification':
+                weights = -1 * ((y == 1) * np.log(pred) + (y != 1) * np.log(1-pred))
+            else:
+                weights = (preds - y)**2
+            
+            weights = np.sum(weights,axis=-1)
+
+    def predict(self, x):
+        print(self.sub_ensembles[0].predict(x).shape)
+        preds = np.array([ensemble.predict(x) for ensemble in self.sub_ensembles])
+        return np.mean(preds, axis=0)
 
 class Stack(Ensemble):
-    def __init__(self, stack_model, *sub_ensembles):
+    def __init__(self, stack_model, sub_ensembles):
         self.sub_ensembles = sub_ensembles
         self.model = stack_model
+        self.result_type = self.sub_ensembles[0].result_type
     
-    def _fit(self, x, y):
-        preds = [ensemble.fit(x, y).predict(x) for ensemble in self.sub_ensembles]
-        augmented_x = np.array([x[i] + [p[i] for p in preds] for i in range(len(x))])
+    def _fit(self, x, y, **kwargs):
+        preds = [ensemble.fit(x, y, **kwargs).predict(x) for ensemble in self.sub_ensembles]
+        new_features = np.array([np.array([p[i, :] for p in preds]).flatten() for i in range(len(x))])
+        print(np.shape(x), np.shape(new_features))
+        augmented_x = np.concatenate((x, new_features), axis=1)
         
         self.model.fit(augmented_x, y)
     
     def predict(self, x):
         preds = [ensemble.predict(x) for ensemble in self.sub_ensembles]
-        augmented_x = np.array([x[i] + [p[i] for p in preds] for i in range(len(x))])
+        new_features = np.array([np.array([p[i, :] for p in preds]).flatten() for i in range(len(x))])
+        augmented_x = np.concatenate((x, new_features), axis=1)
 
         return self.model.predict(augmented_x)
-        
-
-
-
