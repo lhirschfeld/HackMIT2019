@@ -6,6 +6,9 @@ from base_models import *
 
 class Bag(Ensemble):
     def __init__(self, sample_prob, sub_ensembles):
+        assert len(sub_ensembles) > 0, "Must specify at least one submodel for %s" % (
+            self.__class__.__name__)
+        assert len(set([e.result_type for e in sub_ensembles])) == 1, "All submodel result_types must match"
         self.sample_prob = sample_prob
         self.sub_ensembles = sub_ensembles
         self.result_type = self.sub_ensembles[0].result_type
@@ -37,6 +40,9 @@ class Bag(Ensemble):
 class GradientBoost(Ensemble):
     def __init__(self, sub_ensembles):
         # Implicit: First sub_ensemble is being boosted
+        assert len(sub_ensembles) > 0, "Must specify at least one submodel for %s" % (
+            self.__class__.__name__)
+        assert len(set([e.result_type for e in sub_ensembles])) == 1, "All submodel result_types must match"
         self.sub_ensembles = sub_ensembles
         self.result_type = self.sub_ensembles[0].result_type
     
@@ -55,6 +61,9 @@ class GradientBoost(Ensemble):
 
 class AdaBoost(Ensemble):
     def __init__(self, sub_ensembles):
+        assert len(sub_ensembles) > 0, "Must specify at least one submodel for %s" % (
+            self.__class__.__name__)
+        assert len(set([e.result_type for e in sub_ensembles])) == 1, "All submodel result_types must match"
         self.sub_ensembles = sub_ensembles
         self.result_type = self.sub_ensembles[0].result_type
     
@@ -81,6 +90,9 @@ class AdaBoost(Ensemble):
 
 class Stack(Ensemble):
     def __init__(self, stack_model, sub_ensembles):
+        assert len(sub_ensembles) > 0, "Must specify at least one submodel for %s" % (
+            self.__class__.__name__)
+        assert len(set([e.result_type for e in sub_ensembles + [stack_model]])) == 1, "All submodel result_types must match"
         self.sub_ensembles = sub_ensembles
         self.model = stack_model
         self.result_type = self.sub_ensembles[0].result_type

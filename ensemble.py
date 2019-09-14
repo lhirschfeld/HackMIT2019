@@ -45,3 +45,8 @@ class Ensemble:
         else:
             return mean_squared_error(y, preds)
     
+    def __repr__(self):
+        if not hasattr(self, 'id'):
+            self.id = int(random()*(2**10))
+
+        return self.__class__.__name__ + ' ' + str(self.id)

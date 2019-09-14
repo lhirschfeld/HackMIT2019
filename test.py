@@ -43,3 +43,6 @@ plt.xticks(())
 plt.yticks(())
 
 plt.show()
+
+ef.visualize_ensemble(regr)
+plt.show()
