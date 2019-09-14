@@ -1,5 +1,5 @@
 import numpy as np
-from sklearn.linear_model import LinearRegression as SkLinReg, LogisticRegression as SkLogReg, \
+from sklearn.linear_model import LinearRegression as SkLinReg, SGDClassifier as SkSGD, \
     Lasso as SkLasso, Ridge as SkRidge
 from sklearn.svm import LinearSVC as SkSVC, LinearSVR as SkSVR
 from sklearn.neural_network import MLPClassifier as SkMLPC, MLPRegressor as SkMLPR
@@ -33,8 +33,12 @@ class LogRegression(SkLearnModel):
     Wrapper of sklearn.linear_model.LogisticRegression
     """
     def __init__(self, **kwargs):
-        self.model = SkLogReg(**kwargs)
+        self.model = SkSGD(loss="log", max_iter=1e2, **kwargs)
         self.result_type = 'classification'
+    
+    def _fit(self, x, y, **kwargs):
+        self.model.fit(x, np.argmax(y, axis=1), **kwargs)
+        print("DID NOT ESCAPE")
     
     def predict(self, x):
         return self.model.predict_proba(x)
@@ -119,6 +123,9 @@ class DecisionTreeClassifier(SkLearnModel):
         self.model = SkDecTreeC(**kwargs)
         self.result_type = 'classification'
     
+    def _fit(self, x, y, **kwargs):
+        self.model.fit(x, np.argmax(y, axis=1), **kwargs)
+
     def predict(self, x):
         return self.model.predict_proba(x)
 

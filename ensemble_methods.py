@@ -72,12 +72,14 @@ class AdaBoost(Ensemble):
             weights = kwargs['sample_weight']
         else:
             weights = np.ones(len(y))
-        
+
         for ensemble in self.sub_ensembles:
             preds = ensemble.fit(x, y, sample_weight=weights).predict(x)
             
             if self.result_type == 'classification':
-                weights = -1 * ((y == 1) * np.log(pred) + (y != 1) * np.log(1-pred))
+                preds *= 0.98
+                preds += 0.001
+                weights = -1 * ((y == 1) * np.log(preds) + (y != 1) * np.log(1-preds))
             else:
                 weights = (preds - y)**2
             
