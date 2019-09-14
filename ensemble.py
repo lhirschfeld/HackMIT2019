@@ -5,10 +5,6 @@ class Ensemble:
     Base class for ensembling.
     Instances of this class are capable of training and prediction.
     """
-
-    def __init__(self):
-        return
-
     @staticmethod
     def bag(sub_ensembles, splits):
         return Bag(sub_ensembles, splits)
@@ -22,14 +18,14 @@ class Ensemble:
         return Stack(sub_ensembles)
     
     @abc.abstractmethod
-    def fit(self, data):
+    def fit(self, X, y):
         """
         Trains the ensemble using supplied data.
         """
         pass
 
     @abc.abstractmethod
-    def predict(self, data):
+    def predict(self, X):
         """
         Predicts the labels of supplied data.
         """
