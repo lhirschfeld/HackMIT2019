@@ -5,6 +5,7 @@ import random
 from sklearn import datasets
 from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
 
 import ensemble_factory as ef
 import sys
@@ -29,14 +30,6 @@ for y in teY:
 oh_trY = np.array(oh_trY)
 oh_teY = np.array(oh_teY)
 
-f = RandomForestClassifier()
-f.fit(trX, trY)
-
-y_hat = f.predict(teX)
-
-rf_acc = sum(teY == y_hat)/len(teY)
-
-
 trY = trY.reshape((-1, 1))
 teY = teY.reshape((-1, 1))
 
@@ -48,11 +41,22 @@ is_classifier = True
 genetic = Genetic(make_default_eval(trX[:int(len(trX)*0.75)], oh_trY[:int(len(trX)*0.75)], trX[int(len(trX)*0.75):], oh_trY[int(len(trX)*0.75):]), 60, 10, make_default_base_initialize(classifier=is_classifier), 
                 make_joint_crossover([make_boost_crossover(is_classifier), make_simple_stack_crossover(is_classifier),bag_crossover], [1/3, 1/3, 1/3]),
                 make_mutator(mutate_prob=0.05, classifier=is_classifier), make_random_child_generator([2,3,4], [1/3, 1/3, 1/3]), run_name='test' )
-ens = genetic.run(4, add_simple=True)[0]
+ens = genetic.run(3, add_simple=True)[0]
+
+# Baseline: random forest
+rf = RandomForestClassifier()
+rf.fit(trX, trY)
+rf_acc = sum(teY == rf.predict(teX))/len(teY)
+
+# Baseline: logistic regression
+logreg = LogisticRegression()
+logreg.fit(trX, trY)
+logreg_acc = sum(teY == logreg.predict(teX)) / len(teY)
 
 print('test_loss', ens._loss(teX, oh_teY))
 print('test_accuracy', sum(np.argmax(ens.predict(teX), axis=1) == teY.flatten())/len(teY))
 print('rf_accuracy', rf_acc)
+print('logreg_accuracy', logreg_acc)
 
 ef.visualize_ensemble(ens)
 print(ens)
