@@ -12,7 +12,7 @@ class Bag(Ensemble):
         assert len(set([e.result_type for e in sub_ensembles])) == 1, "All submodel result_types must match"
         self.sample_prob = sample_prob
         self.result_type = self.sub_ensembles[0].result_type
-        self.depth = max([getattr(en, 'depth', 1) for en in sub_ensembles])
+        self.depth = max([en.depth for en in sub_ensembles])
     
     def _fit(self, x, y, **kwargs):
         weights = kwargs['sample_weight'] if 'sample_weight' in kwargs else np.ones(len(x))
@@ -54,7 +54,7 @@ class GradientBoost(Ensemble):
             self.__class__.__name__)
         assert len(set([e.result_type for e in sub_ensembles])) == 1, "All submodel result_types must match"
         self.result_type = self.sub_ensembles[0].result_type
-        self.depth = max([getattr(en, 'depth', 1) for en in sub_ensembles])
+        self.depth = max([en.depth for en in sub_ensembles])
     
     def _fit(self, x, y, **kwargs):
         residuals = y
@@ -80,7 +80,7 @@ class AdaBoost(Ensemble):
             self.__class__.__name__)
         assert len(set([e.result_type for e in sub_ensembles])) == 1, "All submodel result_types must match"
         self.result_type = self.sub_ensembles[0].result_type
-        self.depth = max([getattr(en, 'depth', 1) for en in sub_ensembles])
+        self.depth = max([en.depth for en in sub_ensembles])
     
     def _fit(self, x, y, **kwargs):
         if 'sample_weight' in kwargs:
@@ -116,7 +116,7 @@ class Stack(Ensemble):
         assert len(set([e.result_type for e in self.sub_ensembles] + [stack_model.result_type])) == 1, "All submodel result_types must match"
         self.model = stack_model
         self.result_type = self.sub_ensembles[0].result_type
-        self.depth = max([getattr(en, 'depth', 1) for en in sub_ensembles]) + getattr(stack_model, 'depth', 1)
+        self.depth = max([en.depth for en in sub_ensembles]) + stack_model.depth
     
     def _fit(self, x, y, **kwargs):
         preds = [ensemble.fit(x, y, **kwargs).predict(x) for ensemble in self.sub_ensembles]
