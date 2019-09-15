@@ -98,8 +98,8 @@ class Genetic:
                 self.mutator(new_child)
                 new_pop.setdefault(self.evaluate(new_child), []).append(new_child)
             self.population = new_pop
-            print(n, self.population.keys())
-            if min(self.population) < best_loss:
+            #print(n, self.population.keys())
+            if min(self.population.keys()) < best_loss:
                 best_loss = min(self.population)
                 print(n, "New best loss", best_loss)
             if n % 10 == 0:
