@@ -6,6 +6,8 @@ import random
 import matplotlib.pyplot as plt
 import ensemble_factory as ef
 from sklearn import datasets
+import multiprocessing
+
 
 def make_uniform_child_generator(n):
     def uniform_child_generator():
@@ -42,7 +44,8 @@ def make_default_eval(trainx, trainy, valx, valy):
         return ensemble._loss(valx, valy)
     return default_eval
 
-def make_mutator(mutate_prob=0.05):
+def make_mutator(mutate_prob=0.05, classifier=True):
+    mutate_with = ef.BASE_CLASSIFIERS if classifier else ef.BASE_REGRESSORS
     def mutate(top):
         layer = [top]
         while len(layer) != 0:
@@ -56,11 +59,13 @@ def make_mutator(mutate_prob=0.05):
             layer = new_layer
     return mutate
 
-def default_base_initialize():
-    pop = []
-    for method in ef.BASE_CLASSIFIERS:
-        pop.append(method())
-    return pop
+def make_default_base_initialize(classifier=True):
+    def default_base_initialize():
+        pop = []
+        for method in (ef.BASE_CLASSIFIERS if classifier else ef.BASE_REGRESSORS):
+            pop.append(method())
+        return pop
+    return default_base_initialize
 
 class Genetic:
     def __init__(self, evaluate, popsize, keep, initialize, crossover, mutator, num_child_nodes_generator, run_name='default'):
@@ -93,11 +98,26 @@ class Genetic:
             if len(parents) < self.keep:
                 pass
             # TODO investigate other sampling methods than random sample... perhaps weighted sample?
+            children = []
             for i in range(self.popsize - self.keep):
                 group = random.sample(parents, next(self.num_child_nodes_generator))
                 new_child = self.crossover([g.copy() for g in group])
                 self.mutator(new_child)
-                new_pop.setdefault(self.evaluate(new_child), []).append(new_child)
+                try:
+                    #children.append(new_child)
+                    new_pop.setdefault(self.evaluate(new_child), []).append(new_child)
+                except:
+                    print("Error skipping...")
+                    i -= 1
+                    continue
+            
+            # print(children)
+            # pool = multiprocessing.Pool(multiprocessing.cpu_count())
+            # perfs = pool.map(self.evaluate, children)
+
+            # for perf, child in zip(perfs, children):
+            #     new_pop.setdefault(perf, []).append(new_child)
+
             self.population = new_pop
             #print(n, self.population.keys())
             if min(self.population.keys()) < best_loss:
@@ -106,6 +126,10 @@ class Genetic:
             if n % 10 == 0:
                 pkl.dump(self.population, open(self.run_name+'-temp.pkl', 'wb'))
                 os.rename(self.run_name+'-temp.pkl', self.run_name+'.pkl')
+            
+            if best_loss < 1e-10:
+                print("Early stopping", n)
+                break
         return self.population[min(self.population)]
 
 def unison_shuffled_copies(a, b):
@@ -114,6 +138,9 @@ def unison_shuffled_copies(a, b):
 
 if __name__ == "__main__":
     is_classifier = True
+    seed = random.randint(0, 100)
+    random.seed(seed)
+    print(seed)
 
     iris = datasets.load_iris()
     iris_x = iris.data
@@ -126,13 +153,14 @@ if __name__ == "__main__":
 
     iris_x, iris_y = unison_shuffled_copies(iris_x, iris_y)
 
-    genetic = Genetic(make_default_eval(iris_x[:80], iris_y[:80], iris_x[80:120], iris_y[80:120]), 30, 10, default_base_initialize, 
+    genetic = Genetic(make_default_eval(iris_x[:80], iris_y[:80], iris_x[80:120], iris_y[80:120]), 30, 5, make_default_base_initialize(classifier=is_classifier), 
                     make_joint_crossover([make_boost_crossover(is_classifier), make_simple_stack_crossover(is_classifier),bag_crossover], [1/3, 1/3, 1/3]),
-                    make_mutator(mutate_prob=0.05), make_uniform_child_generator(2), run_name='test' )
-    ens = genetic.run(5)[0]
+                    make_mutator(mutate_prob=0.05, classifier=is_classifier), make_uniform_child_generator(2), run_name='test' )
+    ens = genetic.run(10)[0]
 
     print('test_loss',ens._loss(iris_x[120:],iris_y[120:]))
+    print('test_accuracy', sum(np.argmax(ens.predict(iris_x[120:]), axis=1) == np.argmax(iris_y[120:],axis=1))/len(iris_y[120:]))
 
     ef.visualize_ensemble(ens)
     print(ens)
-    plt.show()
+    # plt.show()

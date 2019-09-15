@@ -17,6 +17,7 @@ def build_nx_graph(ensemble):
         if not hasattr(node, 'sub_ensembles'):
             continue
 
+        
         for sub_ensemble in node.sub_ensembles:
             G.add_node(str(sub_ensemble))
             G.add_edge(str(sub_ensemble), str(node))

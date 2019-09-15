@@ -28,6 +28,13 @@ class Ensemble:
         Predicts the labels of supplied data.
         """
         pass
+    
+    @abc.abstractmethod
+    def copy(self):
+        """
+        Creates a copy of the existing ensemble.
+        """
+        pass
 
     def _loss(self, x, y):
         """
