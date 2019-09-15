@@ -110,24 +110,29 @@ def stack(stack_model, *sub_ensembles):
     """
     return ensemble_methods.Stack(stack_model, sub_ensembles)
 
-def build_nx_graph(ensemble):
+def build_nx_graph(ensemble, x=None, y=None):
     """
     Returns a NetworkX graph representation of the ensemble
     
-    :param stack_model (Ensemble): the ensemble to visualize
-    :return (NetworkX.DiGraph): the graph
+    :param ensemble (Ensemble): the ensemble to visualize
+    :param x (np.array, optional): set of x to evaluate on
+    :param y (np.array, optional): set of y to evaluate on
+    :return (tuple(NetworkX.DiGraph), list): the graph and a list of node accuracies if
+        x and y were passed
     """
 
-    return graphics.build_nx_graph(ensemble)
+    return graphics.build_nx_graph(ensemble, x=x, y=y)
 
-def visualize_ensemble(ensemble):
+def visualize_ensemble(ensemble, x=None, y=None):
     """
     Plots to matplotlib the NetworkX graph of the ensemble.
     
     :param stack_model (Ensemble): the ensemble to visualize
+    :param x (np.array, optional): set of x to evaluate on
+    :param y (np.array, optional): set of y to evaluate on
     """
 
-    graphics.visualize_ensemble(ensemble)
+    graphics.visualize_ensemble(ensemble, x=x, y=y)
 
 
 
