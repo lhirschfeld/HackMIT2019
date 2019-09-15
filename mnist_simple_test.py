@@ -44,7 +44,7 @@ genetic = Genetic(make_default_eval(trX[:int(len(trX)*0.75)], oh_trY[:int(len(tr
 ens = genetic.run(5, add_simple=True)[0]
 
 # Baseline: random forest
-rf = RandomForestClassifier()
+rf = RandomForestClassifier(n_estimators=100)
 rf.fit(trX, trY)
 rf_acc = sum(teY == rf.predict(teX))/len(teY)
 
