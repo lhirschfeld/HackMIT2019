@@ -1,6 +1,7 @@
 import os
 # Set any environment variables to limit MKL threads
 import numpy as np
+import heapq
 import pickle as pkl
 import random
 import matplotlib.pyplot as plt
@@ -62,8 +63,8 @@ def default_base_initialize():
         pop.append(method())
     return pop
 
-class Genetic:
-    def __init__(self, evaluate, popsize, keep, initialize, crossover, mutator, num_child_nodes_generator, run_name='default'):
+class TreeGrower:
+    def __init__(self, evaluate, maxsize, crossover, mutator, num_child_nodes_generator, run_name='default'):
         #self.num_features = x.shape[1]
         #self.num_outputs = y.shape[0]
         self.population = dict()
@@ -126,13 +127,12 @@ if __name__ == "__main__":
 
     iris_x, iris_y = unison_shuffled_copies(iris_x, iris_y)
 
-    genetic = Genetic(make_default_eval(iris_x[:80], iris_y[:80], iris_x[80:120], iris_y[80:120]), 30, 10, default_base_initialize, 
+    genetic = Genetic(make_default_eval(iris_x[:100], iris_y[:100], iris_x[100:], iris_y[100:]), 30, 5, default_base_initialize, 
                     make_joint_crossover([make_boost_crossover(is_classifier), make_simple_stack_crossover(is_classifier),bag_crossover], [1/3, 1/3, 1/3]),
                     make_mutator(mutate_prob=0.05), make_uniform_child_generator(2), run_name='test' )
     ens = genetic.run(5)[0]
 
-    print('test_loss',ens._loss(iris_x[120:],iris_y[120:]))
-
     ef.visualize_ensemble(ens)
     print(ens)
     plt.show()
+

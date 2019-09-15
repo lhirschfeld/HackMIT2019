@@ -32,7 +32,11 @@ class Bag(Ensemble):
         
         for ensemble in self.sub_ensembles:
             x_s, y_s, w_s = subsample_with_replacement()
-            ensemble.fit(x_s, y_s, sample_weight=w_s)
+
+            if 'sample_weight' in kwargs:
+                ensemble.fit(x_s, y_s, sample_weight=w_s)
+            else:
+                ensemble.fit(x_s, y_s)
             
     def predict(self, x):
         preds = np.array([ensemble.predict(x) for ensemble in self.sub_ensembles])
