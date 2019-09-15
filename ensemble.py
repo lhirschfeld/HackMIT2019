@@ -24,6 +24,7 @@ class Ensemble:
         self._fit(x, y, **kwargs)
 
         self.train_loss = self._loss(x, y)
+        self.train_accuracy = self._accuracy(x, y)
 
         return self
     
@@ -65,6 +66,16 @@ class Ensemble:
             return log_loss(y, preds)
         else:
             return mean_squared_error(y, preds)
+    
+    def _accuracy(self, x, y):
+        """
+        Calculates and returns the accuracy of the model
+        """
+        preds = self.predict(x)
+        if self.result_type == 'classification':
+            return sum(np.argmax(preds, axis=1) == np.argmax(y, axis=1))/len(y)
+        else:
+            return sum(preds.flatten() == y.flatten())/len(y)      
     
     def __repr__(self):
         if not hasattr(self, 'id'):

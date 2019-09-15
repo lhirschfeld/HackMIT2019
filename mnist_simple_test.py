@@ -54,7 +54,7 @@ logreg.fit(trX, trY)
 logreg_acc = sum(teY == logreg.predict(teX)) / len(teY)
 
 print('test_loss', ens._loss(teX, oh_teY))
-print('test_accuracy', sum(np.argmax(ens.predict(teX), axis=1) == teY.flatten())/len(teY))
+print('test_accuracy', ens._accuracy(teX, oh_teY))
 print('rf_accuracy', rf_acc)
 print('logreg_accuracy', logreg_acc)
 

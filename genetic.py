@@ -146,9 +146,9 @@ class Genetic:
             if min(self.population.keys()) < best_loss:
                 best_loss = min(self.population)
                 print(n, "New best loss", best_loss)
-            if n % 10 == 0:
-                pkl.dump(self.population, open(self.run_name+'-temp.pkl', 'wb'))
-                os.rename(self.run_name+'-temp.pkl', self.run_name+'.pkl')
+            # if n % 10 == 0:
+            pkl.dump(self.population, open(self.run_name+'-temp.pkl', 'wb'))
+            os.rename(self.run_name+'-temp.pkl', self.run_name+'.pkl')
             
             if best_loss < 1e-10:
                 print("Early stopping", n)
@@ -178,7 +178,7 @@ if __name__ == "__main__":
 
     genetic = Genetic(make_default_eval(iris_x[:80], iris_y[:80], iris_x[80:120], iris_y[80:120]), 30, 5, make_default_base_initialize(classifier=is_classifier), 
                     make_joint_crossover([make_boost_crossover(is_classifier), make_simple_stack_crossover(is_classifier),bag_crossover], [1/3, 1/3, 1/3]),
-                    make_mutator(mutate_prob=0.05, classifier=is_classifier), make_uniform_child_generator(2), is_classifier=True, run_name='test' )
+                    make_mutator(mutate_prob=0.05, classifier=is_classifier), make_uniform_child_generator(2), is_classifier=True, run_name='iris' )
     ens = genetic.run(10, add_simple=True)[0]
 
     print('test_loss',ens._loss(iris_x[120:],iris_y[120:]))
