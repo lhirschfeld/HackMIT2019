@@ -15,8 +15,20 @@ from tensorflow.examples.tutorials.mnist import input_data
 
 mnist = input_data.read_data_sets("MNIST_data/", one_hot=False)
 
-trX = np.vstack([img.reshape(-1,) for img in mnist.train.images])
+downsampled_images = []
+for img_old in mnist.train.images:
+    new_img = np.zeros((14, 14))
+    # print(img[0].size)
+    img = img_old.reshape((28, 28))
+    for i in range(0, 28, 2):
+        for j in range(0, 28, 2):
+            new_img[i//2, j//2] = (img[i, j] + img[i, j + 1] + img[i + 1, j] + img[i + 1, j + 1])/4
+    downsampled_images.append(new_img)
+trX = np.vstack([img.reshape(-1,) for img in downsampled_images])
 trY = mnist.train.labels
+
+trX = trX[:int(len(trX)/10)]
+trY = trY[:int(len(trY)/10)]
 
 teX = np.vstack([img.reshape(-1,) for img in mnist.test.images])
 teY = mnist.test.labels
