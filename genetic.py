@@ -55,7 +55,7 @@ def make_mutator(mutate_prob=0.05, classifier=True):
                     new_layer.extend(ensemble.sub_ensembles)
                     if random.random() < mutate_prob:
                         # print("mutating")
-                        ensemble.sub_ensembles.append(random.choice(ef.BASE_CLASSIFIERS)())
+                        ensemble.sub_ensembles.append(random.choice(mutate_with)())
             layer = new_layer
     return mutate
 
@@ -74,7 +74,7 @@ class Genetic:
         self.population = dict()
         self.evaluate = evaluate
         for member in initialize():
-            print(self.evaluate(member))
+            print('Member', self.evaluate(member))
             self.population.setdefault(self.evaluate(member), []).append(member)
         self.crossover = crossover
         self.mutator = mutator

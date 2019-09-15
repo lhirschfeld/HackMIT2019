@@ -35,7 +35,7 @@ class SkLearnModel(Ensemble):
         return self.model.predict(x).reshape(-1, 1)
 
     def copy(self):
-        return SkLearnModel(s)
+        return SkLearnModel()
 
 
 class LogRegression(SkLearnModel):
@@ -71,7 +71,7 @@ class LinRegression(SkLearnModel):
         self.kwargs = kwargs
         self.model = SkLinReg(**self.kwargs)
         self.result_type = 'regression'
-
+     
     def copy(self):
         return LinRegression(**self.kwargs)
 
@@ -133,7 +133,6 @@ class LinearSVMClassifier(SkLearnModel):
             oh_y.append(one_hot)
         
         return np.array(oh_y)
-    
 
     def copy(self):
         return LinearSVMClassifier(**self.kwargs)
@@ -153,7 +152,8 @@ class LinearSVMRegressor(SkLearnModel):
     
     def copy(self):
         return LinearSVMRegressor(**self.kwargs)
-    
+
+
 class MLPClassifier(SkLearnModel):
     """
     Multi-layer perceptron for classification
@@ -173,7 +173,8 @@ class MLPClassifier(SkLearnModel):
     
     def copy(self):
         return MLPClassifier(**self.kwargs)
-    
+
+
 class MLPRegressor(SkLearnModel):
     """
     Multi-layer perceptron for regression
@@ -193,7 +194,8 @@ class MLPRegressor(SkLearnModel):
     
     def copy(self):
         return MLPRegressor(**self.kwargs)
-    
+
+
 class DecisionTreeClassifier(SkLearnModel):
     """
     Decision tree for classification
@@ -215,6 +217,7 @@ class DecisionTreeClassifier(SkLearnModel):
     def copy(self):
         return DecisionTreeClassifier(**self.kwargs)
 
+
 class DecisionTreeRegressor(SkLearnModel):
     """
     Decision tree for regression
@@ -226,12 +229,6 @@ class DecisionTreeRegressor(SkLearnModel):
         self.kwargs = kwargs
         self.model = SkDecTreeR(**self.kwargs)
         self.result_type = 'regression'
-    
-    def predict(self, x):
-        p = super().predict(x)
-        if len(p.shape) == 1:
-            return p.reshape((len(p), 1))
-        return p
-    
+
     def copy(self):
         return DecisionTreeRegressor(**self.kwargs)
