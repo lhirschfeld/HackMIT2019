@@ -94,8 +94,8 @@ class Genetic:
                 pass
             # TODO investigate other sampling methods than random sample... perhaps weighted sample?
             for i in range(self.popsize - self.keep):
-                parents = random.sample(parents, next(self.num_child_nodes_generator))
-                new_child = self.crossover(random.sample(parents, next(self.num_child_nodes_generator)))
+                group = random.sample(parents, next(self.num_child_nodes_generator))
+                new_child = self.crossover([g.copy() for g in group])
                 self.mutator(new_child)
                 new_pop.setdefault(self.evaluate(new_child), []).append(new_child)
             self.population = new_pop
