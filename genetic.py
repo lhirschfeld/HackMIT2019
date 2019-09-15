@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import ensemble_factory as ef
 from sklearn import datasets
 import multiprocessing
+from tqdm import tqdm
 
 
 def make_uniform_child_generator(n):
@@ -14,6 +15,19 @@ def make_uniform_child_generator(n):
         while True:
             yield n
     return uniform_child_generator()
+
+def make_random_child_generator(poss_nums, weights):
+    def random_child_generator():
+        while True:
+            point = random.random()
+            retval = None
+            for i, w in enumerate(weights):
+                if point < 0:
+                    retval = poss_nums[i-1]
+                point -= w
+            if retval is None: retval = poss_nums[-1]
+            yield retval
+    return random_child_generator()
 
 def make_boost_crossover(classifier=True):
     return ef.adaboost if classifier else ef.gradient_boost
@@ -103,7 +117,7 @@ class Genetic:
             if add_simple:
                 for method in (ef.BASE_CLASSIFIERS if self.is_classifier else ef.BASE_REGRESSORS):
                     parents.append(method())
-            for i in range(self.popsize - self.keep):
+            for i in tqdm(range(self.popsize - self.keep)):
                 group = random.sample(parents, next(self.num_child_nodes_generator))
                 new_child = self.crossover([g.copy() for g in group])
                 self.mutator(new_child)
