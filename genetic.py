@@ -9,6 +9,11 @@ from sklearn import datasets
 import multiprocessing
 from tqdm import tqdm
 
+def warn(*args, **kwargs):
+    pass
+import warnings
+warnings.warn = warn
+
 
 def make_uniform_child_generator(n):
     def uniform_child_generator():
