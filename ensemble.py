@@ -14,6 +14,12 @@ class Ensemble:
     def fit(self, x, y, **kwargs):
         """
         Trains the ensemble using supplied data.
+
+        :param x (np.ndarray): the training data, with rows being individual observations
+            Has shape (num_samples, num_cols)
+        :param y (np.ndarray): the target for the training data, in the same order as x
+            Has shape (num_samples, 1) 
+        :return (Ensemble): the model
         """
         self._fit(x, y, **kwargs)
 
@@ -29,6 +35,11 @@ class Ensemble:
     def predict(self, x):
         """
         Predicts the labels of supplied data.
+
+        :param x (np.ndarray): the training data, with rows being individual observations
+            Has shape (num_samples, num_cols)
+        :return (np.ndarray): the predicted target values from the training data
+            Has shape (num_samples, 1)
         """
         pass
 
