@@ -10,6 +10,7 @@ from ensemble import Ensemble
 
 class Average(Ensemble):
     def __init__(self, result_type):
+        super(Average, self).__init__()
         self.result_type = result_type
         self.average = None
     
@@ -20,6 +21,9 @@ class Average(Ensemble):
         return np.array([self.average for _ in x])
 
 class SkLearnModel(Ensemble):
+    def __init__(self):
+        super(SkLearnModel, self).__init__()
+    
     def _fit(self, x, y, **kwargs):
         self.model.fit(x, y, **kwargs)
 
@@ -33,6 +37,7 @@ class LogRegression(SkLearnModel):
     Wrapper of sklearn.linear_model.LogisticRegression
     """
     def __init__(self, **kwargs):
+        super(LogRegression, self).__init__()
         self.model = SkSGD(loss="log", max_iter=1e2, **kwargs)
         self.result_type = 'classification'
     
@@ -50,6 +55,7 @@ class LinRegression(SkLearnModel):
     Wrapper of sklearn.linear_model.LinearRegression
     """
     def __init__(self, **kwargs):
+        super(LinRegression, self).__init__()
         self.model = SkLinReg(**kwargs)
         self.result_type = 'regression'
 
@@ -60,6 +66,7 @@ class LassoRegressor(SkLearnModel):
     Wrapper of sklearn.linear_model.Lasso
     """
     def __init__(self, **kwargs):
+        super(LassoRegressor, self).__init__()
         self.model = SkLasso(**kwargs)
         self.result_type = 'regression'
 
@@ -70,6 +77,7 @@ class RidgeRegressor(SkLearnModel):
     Wrapper of sklearn.linear_model.Ridge
     """
     def __init__(self, **kwargs):
+        super(RidgeRegressor, self).__init__()
         self.model = SkRidge(**kwargs)
         self.result_type = 'regression'
 
@@ -80,6 +88,7 @@ class LinearSVMClassifier(SkLearnModel):
     Wrapper of sklearn.svm.LinearSVC
     """
     def __init__(self, **kwargs):
+        super(LinearSVMClassifier, self).__init__()
         self.model = SkSVC(**kwargs)
         self.result_type = 'classification'
     
@@ -90,6 +99,7 @@ class LinearSVMRegressor(SkLearnModel):
     Wrapper of sklearn.svm.LinearSVR
     """
     def __init__(self, **kwargs):
+        super(LinearSVMRegressor, self).__init__()
         self.model = SkSVR(**kwargs)
         self.result_type = 'regression'
     
@@ -100,6 +110,7 @@ class MLPClassifier(SkLearnModel):
     Wrapper of sklearn.neural_network.MLPClassification
     """
     def __init__(self, **kwargs):
+        super(MLPClassifier, self).__init__()
         self.model = SkMLPC(**kwargs)
         self.result_type = 'classification'
     
@@ -110,6 +121,7 @@ class MLPRegressor(SkLearnModel):
     Wrapper of sklearn.neural_network.MLPRegressor
     """
     def __init__(self, **kwargs):
+        super(MLPRegressor, self).__init__()
         self.model = SkMLPR(**kwargs)
         self.result_type = 'regression'
     
@@ -120,6 +132,7 @@ class DecisionTreeClassifier(SkLearnModel):
     Wrapper of sklearn.tree.DecisionTreeClassifier
     """
     def __init__(self, **kwargs):
+        super(DecisionTreeClassifier, self).__init__()
         self.model = SkDecTreeC(**kwargs)
         self.result_type = 'classification'
     
@@ -136,6 +149,7 @@ class DecisionTreeRegressor(SkLearnModel):
     Wrapper of sklearn.tree.DecisionTreeRegressor
     """
     def __init__(self, **kwargs):
+        super(DecisionTreeRegressor, self).__init__()
         self.model = SkDecTreeR(**kwargs)
         self.result_type = 'regression'
     

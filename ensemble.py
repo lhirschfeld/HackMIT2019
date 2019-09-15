@@ -8,6 +8,9 @@ class Ensemble:
     Base class for ensembling.
     Instances of this class are capable of training and prediction.
     """
+    def __init__(self):
+        self.depth = 1  # override this for ensemble methods
+
     def fit(self, x, y, **kwargs):
         """
         Trains the ensemble using supplied data.
