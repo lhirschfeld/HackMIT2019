@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import ensemble_factory as ef
 from sklearn import datasets
 import multiprocessing
+from tqdm import tqdm
 
 
 def make_uniform_child_generator(n):
@@ -14,6 +15,19 @@ def make_uniform_child_generator(n):
         while True:
             yield n
     return uniform_child_generator()
+
+def make_random_child_generator(poss_nums, weights):
+    def random_child_generator():
+        while True:
+            point = random.random()
+            retval = None
+            for i, w in enumerate(weights):
+                if point < 0:
+                    retval = poss_nums[i-1]
+                point -= w
+            if retval is None: retval = poss_nums[-1]
+            yield retval
+    return random_child_generator()
 
 def make_boost_crossover(classifier=True):
     return ef.adaboost if classifier else ef.gradient_boost
@@ -68,9 +82,10 @@ def make_default_base_initialize(classifier=True):
     return default_base_initialize
 
 class Genetic:
-    def __init__(self, evaluate, popsize, keep, initialize, crossover, mutator, num_child_nodes_generator, run_name='default'):
+    def __init__(self, evaluate, popsize, keep, initialize, crossover, mutator, num_child_nodes_generator, is_classifier=True, run_name='default'):
         #self.num_features = x.shape[1]
         #self.num_outputs = y.shape[0]
+        self.is_classifier=is_classifier
         self.population = dict()
         self.evaluate = evaluate
         for member in initialize():
@@ -84,7 +99,7 @@ class Genetic:
         self.keep = keep
         self.run_name = run_name
 
-    def run(self, iters):
+    def run(self, iters, add_simple=False):
         best_loss = 1e15
         for n in range(iters):
             parents = []
@@ -99,7 +114,10 @@ class Genetic:
                 pass
             # TODO investigate other sampling methods than random sample... perhaps weighted sample?
             children = []
-            for i in range(self.popsize - self.keep):
+            if add_simple:
+                for method in (ef.BASE_CLASSIFIERS if self.is_classifier else ef.BASE_REGRESSORS):
+                    parents.append(method())
+            for i in tqdm(range(self.popsize - self.keep)):
                 group = random.sample(parents, next(self.num_child_nodes_generator))
                 new_child = self.crossover([g.copy() for g in group])
                 self.mutator(new_child)
@@ -138,9 +156,9 @@ def unison_shuffled_copies(a, b):
 
 if __name__ == "__main__":
     is_classifier = True
-    seed = random.randint(0, 100)
+    seed = random.randint(0, 1000)
     random.seed(seed)
-    print(seed)
+    print("random seed", seed)
 
     iris = datasets.load_iris()
     iris_x = iris.data
@@ -155,12 +173,12 @@ if __name__ == "__main__":
 
     genetic = Genetic(make_default_eval(iris_x[:80], iris_y[:80], iris_x[80:120], iris_y[80:120]), 30, 5, make_default_base_initialize(classifier=is_classifier), 
                     make_joint_crossover([make_boost_crossover(is_classifier), make_simple_stack_crossover(is_classifier),bag_crossover], [1/3, 1/3, 1/3]),
-                    make_mutator(mutate_prob=0.05, classifier=is_classifier), make_uniform_child_generator(2), run_name='test' )
-    ens = genetic.run(10)[0]
+                    make_mutator(mutate_prob=0.05, classifier=is_classifier), make_uniform_child_generator(2), is_classifier=True, run_name='test' )
+    ens = genetic.run(10, add_simple=True)[0]
 
     print('test_loss',ens._loss(iris_x[120:],iris_y[120:]))
     print('test_accuracy', sum(np.argmax(ens.predict(iris_x[120:]), axis=1) == np.argmax(iris_y[120:],axis=1))/len(iris_y[120:]))
 
     ef.visualize_ensemble(ens)
     print(ens)
-    # plt.show()
+    plt.show()
