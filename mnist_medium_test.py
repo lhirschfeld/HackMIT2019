@@ -4,6 +4,7 @@ import numpy as np
 import random
 from sklearn import datasets
 from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.ensemble import RandomForestClassifier
 
 import ensemble_factory as ef
 import sys
@@ -15,25 +16,36 @@ from tensorflow.examples.tutorials.mnist import input_data
 
 mnist = input_data.read_data_sets("MNIST_data/", one_hot=False)
 
-downsampled_images = []
-for img_old in mnist.train.images:
-    new_img = np.zeros((14, 14))
-    # print(img[0].size)
-    img = img_old.reshape((28, 28))
-    for i in range(0, 28, 2):
-        for j in range(0, 28, 2):
-            new_img[i//2, j//2] = (img[i, j] + img[i, j + 1] + img[i + 1, j] + img[i + 1, j + 1])/4
-    downsampled_images.append(new_img)
-trX = np.vstack([img.reshape(-1,) for img in downsampled_images])
+def downsample(images):
+    downsampled_images = []
+    for img_old in images:
+        new_img = np.zeros((14, 14))
+        # print(img[0].size)
+        img = img_old.reshape((28, 28))
+        for i in range(0, 28, 2):
+            for j in range(0, 28, 2):
+                new_img[i//2, j//2] = (img[i, j] + img[i, j + 1] + img[i + 1, j] + img[i + 1, j + 1])/4
+        downsampled_images.append(new_img)
+    return downsampled_images
+
+downsampled_train = downsample(mnist.train.images)
+downsampled_test = downsample(mnist.test.images)
+
+trX = np.vstack([img.reshape(-1,) for img in downsampled_train])
 trY = mnist.train.labels
 
 trX = trX[:int(len(trX)/10)]
 trY = trY[:int(len(trY)/10)]
 
-teX = np.vstack([img.reshape(-1,) for img in mnist.test.images])
+teX = np.vstack([img.reshape(-1,) for img in downsampled_test])
 teY = mnist.test.labels
 
-# trX, teX, trY, teY = train_test_split(mnist.data / 255.0, mnist.target.astype("int0"), test_size = 0.2)
+f = RandomForestClassifier()
+f.fit(trX, trY)
+
+y_hat = f.predict(teX)
+
+rf_acc = sum(teY == y_hat)/len(teY)
 
 oh_trY, oh_teY = [], []
 for y in trY:
@@ -72,6 +84,7 @@ ens = genetic.run(5, add_simple=True)[0]
 
 print('test_loss', ens._loss(teX, oh_teY))
 print('test_accuracy', sum(np.argmax(ens.predict(teX), axis=1) == teY.flatten())/len(teY))
+print('rf_accuracy', rf_acc)
 
 ef.visualize_ensemble(ens)
 print(ens)
