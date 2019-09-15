@@ -1,6 +1,7 @@
 import ensemble_factory as ef
 import networkx as nx
 import matplotlib.pyplot as plt
+from ensemble_methods import *
 
 def build_nx_graph(ensemble):
     queue = [ensemble]
