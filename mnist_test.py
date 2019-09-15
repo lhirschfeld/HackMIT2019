@@ -10,9 +10,18 @@ import sys
 
 from genetic import Genetic, make_default_eval, make_default_base_initialize, make_joint_crossover, make_boost_crossover, make_simple_stack_crossover, bag_crossover, make_mutator, make_uniform_child_generator, make_random_child_generator
 
-mnist = datasets.load_digits()
+from tensorflow.examples.tutorials.mnist import input_data
 
-trX, teX, trY, teY = train_test_split(mnist.data / 255.0, mnist.target.astype("int0"), test_size = 0.2)
+
+mnist = input_data.read_data_sets("MNIST_data/", one_hot=False)
+
+trX = np.vstack([img.reshape(-1,) for img in mnist.train.images])
+trY = mnist.train.labels
+
+teX = np.vstack([img.reshape(-1,) for img in mnist.test.images])
+teY = mnist.test.labels
+
+# trX, teX, trY, teY = train_test_split(mnist.data / 255.0, mnist.target.astype("int0"), test_size = 0.2)
 
 oh_trY, oh_teY = [], []
 for y in trY:
