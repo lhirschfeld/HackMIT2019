@@ -91,7 +91,10 @@ class Genetic:
         #self.num_features = x.shape[1]
         #self.num_outputs = y.shape[0]
         self.is_classifier=is_classifier
-        self.population = dict()
+        if os.path.isfile(run_name+'.pkl'):
+            self.population = pkl.load(open(run_name+'.pkl', 'rb'))
+        else:
+            self.population = dict()
         self.evaluate = evaluate
         for member in initialize():
             print('Member', self.evaluate(member))

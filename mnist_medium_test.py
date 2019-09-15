@@ -64,7 +64,7 @@ def measure_accuracy(regr):
     # print(np.argmax(regr.predict(teX), axis=1))
     return sum(np.argmax(regr.predict(teX), axis=1) == teY.flatten())/len(teY)
 
-seed = random.randint(0, 1000)
+seed = 487#random.randint(0, 1000)
 random.seed(seed)
 print("random seed", seed)
 is_classifier = True
