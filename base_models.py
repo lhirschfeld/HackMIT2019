@@ -20,15 +20,23 @@ class Average(Ensemble):
     def predict(self, x):
         return np.array([self.average for _ in x])
 
+    def copy(self):
+        return Average(self.result_type)
+
+
 class SkLearnModel(Ensemble):
     def __init__(self):
         super(SkLearnModel, self).__init__()
     
     def _fit(self, x, y, **kwargs):
-        self.model.fit(x, y, **kwargs)
+        self.model.fit(x, y, kwargs)
 
     def predict(self, x):
         return self.model.predict(x).reshape(-1, 1)
+
+    def copy(self):
+        return SkLearnModel(s)
+
 
 class LogRegression(SkLearnModel):
     """
@@ -38,7 +46,8 @@ class LogRegression(SkLearnModel):
     """
     def __init__(self, **kwargs):
         super(LogRegression, self).__init__()
-        self.model = SkSGD(loss="log", max_iter=1e2, **kwargs)
+        self.kwargs = kwargs
+        self.model = SkSGD(loss="log", max_iter=1e2, **self.kwargs)
         self.result_type = 'classification'
     
     def _fit(self, x, y, **kwargs):
@@ -46,7 +55,11 @@ class LogRegression(SkLearnModel):
     
     def predict(self, x):
         return self.model.predict_proba(x)
-    
+
+    def copy(self):
+        return LogRegression(**self.kwargs)
+
+  
 class LinRegression(SkLearnModel):
     """
     Linear regresssion
@@ -55,8 +68,13 @@ class LinRegression(SkLearnModel):
     """
     def __init__(self, **kwargs):
         super(LinRegression, self).__init__()
-        self.model = SkLinReg(**kwargs)
+        self.kwargs = kwargs
+        self.model = SkLinReg(**self.kwargs)
         self.result_type = 'regression'
+
+    def copy(self):
+        return LinRegression(**self.kwargs)
+
 
 class LassoRegressor(SkLearnModel):
     """
@@ -66,8 +84,13 @@ class LassoRegressor(SkLearnModel):
     """
     def __init__(self, **kwargs):
         super(LassoRegressor, self).__init__()
-        self.model = SkLasso(**kwargs)
+        self.kwargs = kwargs
+        self.model = SkLasso(**self.kwargs)
         self.result_type = 'regression'
+
+    def copy(self):
+        return LassoRegressor(**self.kwargs)
+
 
 class RidgeRegressor(SkLearnModel):
     """
@@ -77,8 +100,13 @@ class RidgeRegressor(SkLearnModel):
     """
     def __init__(self, **kwargs):
         super(RidgeRegressor, self).__init__()
-        self.model = SkRidge(**kwargs)
+        self.kwargs = kwargs
+        self.model = SkRidge(**self.kwargs)
         self.result_type = 'regression'
+
+    def copy(self):
+        return RidgeRegressor(**self.kwargs)
+
 
 class LinearSVMClassifier(SkLearnModel):
     """
@@ -88,7 +116,8 @@ class LinearSVMClassifier(SkLearnModel):
     """
     def __init__(self, **kwargs):
         super(LinearSVMClassifier, self).__init__()
-        self.model = SkSVC(**kwargs)
+        self.kwargs = kwargs
+        self.model = SkSVC(**self.kwargs)
         self.result_type = 'classification'
     
     def _fit(self, x, y, **kwargs):
@@ -104,10 +133,12 @@ class LinearSVMClassifier(SkLearnModel):
             oh_y.append(one_hot)
         
         return np.array(oh_y)
-
-
-
     
+
+    def copy(self):
+        return LinearSVMClassifier(**self.kwargs)
+
+
 class LinearSVMRegressor(SkLearnModel):
     """
     Support vector machine for regression
@@ -116,8 +147,12 @@ class LinearSVMRegressor(SkLearnModel):
     """
     def __init__(self, **kwargs):
         super(LinearSVMRegressor, self).__init__()
-        self.model = SkSVR(**kwargs)
+        self.kwargs = kwargs
+        self.model = SkSVR(**self.kwargs)
         self.result_type = 'regression'
+    
+    def copy(self):
+        return LinearSVMRegressor(**self.kwargs)
     
 class MLPClassifier(SkLearnModel):
     """
@@ -127,12 +162,17 @@ class MLPClassifier(SkLearnModel):
     """
     def __init__(self, **kwargs):
         super(MLPClassifier, self).__init__()
-        self.model = SkMLPC(**kwargs)
+        self.kwargs = kwargs
+        self.model = SkMLPC(**self.kwargs)
+        self.result_type = 'classification'
         self.result_type = 'classification'
     
     def _fit(self, x, y, **kwargs):
         y = y.flatten()
-        self.model.fit(x, y, **kwargs)
+        self.model.fit(x, y, **kwargs)        
+    
+    def copy(self):
+        return MLPClassifier(**self.kwargs)
     
 class MLPRegressor(SkLearnModel):
     """
@@ -142,12 +182,17 @@ class MLPRegressor(SkLearnModel):
     """
     def __init__(self, **kwargs):
         super(MLPRegressor, self).__init__()
-        self.model = SkMLPR(**kwargs)
+        self.kwargs = kwargs
+        self.model = SkMLPR(**self.kwargs)
+        self.result_type = 'regression'
         self.result_type = 'regression'
     
     def _fit(self, x, y, **kwargs):
         y = y.flatten()
         self.model.fit(x, y, **kwargs)
+    
+    def copy(self):
+        return MLPRegressor(**self.kwargs)
     
 class DecisionTreeClassifier(SkLearnModel):
     """
@@ -157,7 +202,8 @@ class DecisionTreeClassifier(SkLearnModel):
     """
     def __init__(self, **kwargs):
         super(DecisionTreeClassifier, self).__init__()
-        self.model = SkDecTreeC(**kwargs)
+        self.kwargs = kwargs
+        self.model = SkDecTreeC(**self.kwargs)
         self.result_type = 'classification'
     
     def _fit(self, x, y, **kwargs):
@@ -165,6 +211,9 @@ class DecisionTreeClassifier(SkLearnModel):
 
     def predict(self, x):
         return self.model.predict_proba(x)
+    
+    def copy(self):
+        return DecisionTreeClassifier(**self.kwargs)
 
 class DecisionTreeRegressor(SkLearnModel):
     """
@@ -174,13 +223,15 @@ class DecisionTreeRegressor(SkLearnModel):
     """
     def __init__(self, **kwargs):
         super(DecisionTreeRegressor, self).__init__()
-        self.model = SkDecTreeR(**kwargs)
+        self.kwargs = kwargs
+        self.model = SkDecTreeR(**self.kwargs)
         self.result_type = 'regression'
     
     def predict(self, x):
         p = super().predict(x)
         if len(p.shape) == 1:
             return p.reshape((len(p), 1))
-
         return p
     
+    def copy(self):
+        return DecisionTreeRegressor(**self.kwargs)

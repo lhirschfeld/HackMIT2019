@@ -42,6 +42,13 @@ class Ensemble:
             Has shape (num_samples, 1)
         """
         pass
+    
+    @abc.abstractmethod
+    def copy(self):
+        """
+        Creates a copy of the existing ensemble.
+        """
+        pass
 
     def _loss(self, x, y):
         """

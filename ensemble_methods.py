@@ -41,6 +41,9 @@ class Bag(Ensemble):
     def predict(self, x):
         preds = np.array([ensemble.predict(x) for ensemble in self.sub_ensembles])
         return np.mean(preds, axis=0)
+    
+    def copy(self):
+        return Bag(self.sample_prob, [ensemble.copy() for ensemble in self.sub_ensembles])
 
 class GradientBoost(Ensemble):
     def __init__(self, sub_ensembles):
@@ -65,6 +68,9 @@ class GradientBoost(Ensemble):
             preds += sub_ensemble.predict(x)
         
         return preds
+    
+    def copy(self):
+        return GradientBoost([ensemble.copy() for ensemble in self.sub_ensembles])
 
 class AdaBoost(Ensemble):
     def __init__(self, sub_ensembles):
@@ -98,6 +104,9 @@ class AdaBoost(Ensemble):
         preds = np.array([ensemble.predict(x) for ensemble in self.sub_ensembles])
         return np.mean(preds, axis=0)
 
+    def copy(self):
+        return AdaBoost([ensemble.copy() for ensemble in self.sub_ensembles])
+
 class Stack(Ensemble):
     def __init__(self, stack_model, sub_ensembles):
         self.sub_ensembles = list(sub_ensembles)
@@ -122,3 +131,6 @@ class Stack(Ensemble):
         augmented_x = np.concatenate((x, new_features), axis=1)
 
         return self.model.predict(augmented_x)
+    
+    def copy(self):
+        return Stack(self.stack_model, [ensemble.copy() for ensemble in self.sub_ensembles])
