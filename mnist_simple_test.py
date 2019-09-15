@@ -51,7 +51,7 @@ genetic = Genetic(make_default_eval(trX[:int(len(trX)*0.75)], oh_trY[:int(len(tr
 ens = genetic.run(4, add_simple=True)[0]
 
 print('test_loss', ens._loss(teX, oh_teY))
-print('test_accuracy', sum(np.argmax(ens.predict(teX), axis=1) == teY.flatten())/len(teY))
+print('test_accuracy', ens._accuracy(teX, oh_teY))
 print('rf_accuracy', rf_acc)
 
 ef.visualize_ensemble(ens)
