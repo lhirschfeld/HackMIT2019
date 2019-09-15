@@ -5,6 +5,7 @@ import random
 from sklearn import datasets
 from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.ensemble import RandomForestClassifier
+import pickle
 from sklearn.linear_model import LogisticRegression
 
 import ensemble_factory as ef
@@ -41,7 +42,7 @@ is_classifier = True
 genetic = Genetic(make_default_eval(trX[:int(len(trX)*0.75)], oh_trY[:int(len(trX)*0.75)], trX[int(len(trX)*0.75):], oh_trY[int(len(trX)*0.75):]), 60, 10, make_default_base_initialize(classifier=is_classifier), 
                 make_joint_crossover([make_boost_crossover(is_classifier), make_simple_stack_crossover(is_classifier),bag_crossover], [1/3, 1/3, 1/3]),
                 make_mutator(mutate_prob=0.05, classifier=is_classifier), make_random_child_generator([2,3,4], [1/3, 1/3, 1/3]), run_name='test' )
-ens = genetic.run(5, add_simple=True)[0]
+ens = genetic.run(3, add_simple=True)[0]
 
 trY = trY.reshape((-1, ))
 teY = teY.reshape((-1, ))
@@ -60,6 +61,9 @@ print('test_loss', ens._loss(teX, oh_teY))
 print('test_accuracy', ens._accuracy(teX, oh_teY))
 print('rf_accuracy', rf_acc)
 print('logreg_accuracy', logreg_acc)
+
+with open('mnist_small_ens.pickle', mode='wb') as f:
+    pickle.dump(ens, f)
 
 ef.visualize_ensemble(ens)
 print(ens)
