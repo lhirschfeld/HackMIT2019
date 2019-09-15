@@ -28,7 +28,7 @@ class SkLearnModel(Ensemble):
         self.model.fit(x, y, **kwargs)
 
     def predict(self, x):
-        return self.model.predict(x)
+        return self.model.predict(x).reshape(-1, 1)
 
 class LogRegression(SkLearnModel):
     """
@@ -130,6 +130,10 @@ class MLPClassifier(SkLearnModel):
         self.model = SkMLPC(**kwargs)
         self.result_type = 'classification'
     
+    def _fit(self, x, y, **kwargs):
+        y = y.flatten()
+        self.model.fit(x, y, **kwargs)
+    
 class MLPRegressor(SkLearnModel):
     """
     Multi-layer perceptron for regression
@@ -140,6 +144,10 @@ class MLPRegressor(SkLearnModel):
         super(MLPRegressor, self).__init__()
         self.model = SkMLPR(**kwargs)
         self.result_type = 'regression'
+    
+    def _fit(self, x, y, **kwargs):
+        y = y.flatten()
+        self.model.fit(x, y, **kwargs)
     
 class DecisionTreeClassifier(SkLearnModel):
     """
