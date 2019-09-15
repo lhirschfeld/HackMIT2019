@@ -6,11 +6,11 @@ from base_models import *
 
 class Bag(Ensemble):
     def __init__(self, sample_prob, sub_ensembles):
+        self.sub_ensembles = list(sub_ensembles)
         assert len(sub_ensembles) > 0, "Must specify at least one submodel for %s" % (
             self.__class__.__name__)
         assert len(set([e.result_type for e in sub_ensembles])) == 1, "All submodel result_types must match"
         self.sample_prob = sample_prob
-        self.sub_ensembles = sub_ensembles
         self.result_type = self.sub_ensembles[0].result_type
         self.depth = max([en.depth for en in sub_ensembles])
     
@@ -32,7 +32,11 @@ class Bag(Ensemble):
         
         for ensemble in self.sub_ensembles:
             x_s, y_s, w_s = subsample_with_replacement()
-            ensemble.fit(x_s, y_s, sample_weight=w_s)
+
+            if 'sample_weight' in kwargs:
+                ensemble.fit(x_s, y_s, sample_weight=w_s)
+            else:
+                ensemble.fit(x_s, y_s)
             
     def predict(self, x):
         preds = np.array([ensemble.predict(x) for ensemble in self.sub_ensembles])
@@ -40,11 +44,12 @@ class Bag(Ensemble):
 
 class GradientBoost(Ensemble):
     def __init__(self, sub_ensembles):
+        self.sub_ensembles = list(sub_ensembles)
+
         # Implicit: First sub_ensemble is being boosted
         assert len(sub_ensembles) > 0, "Must specify at least one submodel for %s" % (
             self.__class__.__name__)
         assert len(set([e.result_type for e in sub_ensembles])) == 1, "All submodel result_types must match"
-        self.sub_ensembles = sub_ensembles
         self.result_type = self.sub_ensembles[0].result_type
         self.depth = max([en.depth for en in sub_ensembles])
     
@@ -63,10 +68,11 @@ class GradientBoost(Ensemble):
 
 class AdaBoost(Ensemble):
     def __init__(self, sub_ensembles):
+        self.sub_ensembles = list(sub_ensembles)
+
         assert len(sub_ensembles) > 0, "Must specify at least one submodel for %s" % (
             self.__class__.__name__)
         assert len(set([e.result_type for e in sub_ensembles])) == 1, "All submodel result_types must match"
-        self.sub_ensembles = sub_ensembles
         self.result_type = self.sub_ensembles[0].result_type
         self.depth = max([en.depth for en in sub_ensembles])
     
@@ -89,16 +95,16 @@ class AdaBoost(Ensemble):
             weights = np.sum(weights,axis=-1)
 
     def predict(self, x):
-        print(self.sub_ensembles[0].predict(x).shape)
         preds = np.array([ensemble.predict(x) for ensemble in self.sub_ensembles])
         return np.mean(preds, axis=0)
 
 class Stack(Ensemble):
     def __init__(self, stack_model, sub_ensembles):
+        self.sub_ensembles = list(sub_ensembles)
+
         assert len(sub_ensembles) > 0, "Must specify at least one submodel for %s" % (
             self.__class__.__name__)
-        assert len(set([e.result_type for e in sub_ensembles] + [stack_model.result_type])) == 1, "All submodel result_types must match"
-        self.sub_ensembles = sub_ensembles
+        assert len(set([e.result_type for e in self.sub_ensembles] + [stack_model.result_type])) == 1, "All submodel result_types must match"
         self.model = stack_model
         self.result_type = self.sub_ensembles[0].result_type
         self.depth = max([en.depth for en in sub_ensembles]) + stack_model.depth
@@ -106,7 +112,6 @@ class Stack(Ensemble):
     def _fit(self, x, y, **kwargs):
         preds = [ensemble.fit(x, y, **kwargs).predict(x) for ensemble in self.sub_ensembles]
         new_features = np.array([np.array([p[i, :] for p in preds]).flatten() for i in range(len(x))])
-        print(np.shape(x), np.shape(new_features))
         augmented_x = np.concatenate((x, new_features), axis=1)
         
         self.model.fit(augmented_x, y)

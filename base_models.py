@@ -43,7 +43,6 @@ class LogRegression(SkLearnModel):
     
     def _fit(self, x, y, **kwargs):
         self.model.fit(x, np.argmax(y, axis=1), **kwargs)
-        print("DID NOT ESCAPE")
     
     def predict(self, x):
         return self.model.predict_proba(x)
@@ -91,6 +90,23 @@ class LinearSVMClassifier(SkLearnModel):
         super(LinearSVMClassifier, self).__init__()
         self.model = SkSVC(**kwargs)
         self.result_type = 'classification'
+    
+    def _fit(self, x, y, **kwargs):
+        self.y_size = len(y[0])
+        self.model.fit(x, np.argmax(y, axis=1), **kwargs)
+    
+    def predict(self, x):
+        classes = super().predict(x)
+        oh_y = []
+        for y in classes:
+            one_hot = np.zeros(self.y_size)
+            one_hot[y] = 1
+            oh_y.append(one_hot)
+        
+        return np.array(oh_y)
+
+
+
     
 class LinearSVMRegressor(SkLearnModel):
     """

@@ -63,7 +63,7 @@ def decision_tree_regressor(**kwargs):
     """
     return base_models.DecisionTreeRegressor(**kwargs)
 
-BASE_CLASSIFIERS = [logistic_regression, svm_classifier, decision_tree_classifier] # TODO put MLP back in at some point
+BASE_CLASSIFIERS = [logistic_regression, decision_tree_classifier] # TODO put MLP back in at some point
 
 def bag(sample_prob, *sub_ensembles):
     """
