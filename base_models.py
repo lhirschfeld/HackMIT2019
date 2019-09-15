@@ -10,6 +10,7 @@ from ensemble import Ensemble
 
 class Average(Ensemble):
     def __init__(self, result_type):
+        super(Average, self).__init__()
         self.result_type = result_type
         self.average = None
     
@@ -24,11 +25,14 @@ class Average(Ensemble):
 
 
 class SkLearnModel(Ensemble):
+    def __init__(self):
+        super(SkLearnModel, self).__init__()
+    
     def _fit(self, x, y, **kwargs):
         self.model.fit(x, y, kwargs)
 
     def predict(self, x):
-        return self.model.predict(x)
+        return self.model.predict(x).reshape(-1, 1)
 
     def copy(self):
         return SkLearnModel(s)
@@ -41,7 +45,8 @@ class LogRegression(SkLearnModel):
     Wrapper of sklearn.linear_model.LogisticRegression
     """
     def __init__(self, **kwargs):
-        self.kwargs=  kwargs
+        super(LogRegression, self).__init__()
+        self.kwargs = kwargs
         self.model = SkSGD(loss="log", max_iter=1e2, **self.kwargs)
         self.result_type = 'classification'
     
@@ -62,6 +67,7 @@ class LinRegression(SkLearnModel):
     Wrapper of sklearn.linear_model.LinearRegression
     """
     def __init__(self, **kwargs):
+        super(LinRegression, self).__init__()
         self.kwargs = kwargs
         self.model = SkLinReg(**self.kwargs)
         self.result_type = 'regression'
@@ -77,6 +83,7 @@ class LassoRegressor(SkLearnModel):
     Wrapper of sklearn.linear_model.Lasso
     """
     def __init__(self, **kwargs):
+        super(LassoRegressor, self).__init__()
         self.kwargs = kwargs
         self.model = SkLasso(**self.kwargs)
         self.result_type = 'regression'
@@ -92,6 +99,7 @@ class RidgeRegressor(SkLearnModel):
     Wrapper of sklearn.linear_model.Ridge
     """
     def __init__(self, **kwargs):
+        super(RidgeRegressor, self).__init__()
         self.kwargs = kwargs
         self.model = SkRidge(**self.kwargs)
         self.result_type = 'regression'
@@ -107,6 +115,7 @@ class LinearSVMClassifier(SkLearnModel):
     Wrapper of sklearn.svm.LinearSVC
     """
     def __init__(self, **kwargs):
+        super(LinearSVMClassifier, self).__init__()
         self.kwargs = kwargs
         self.model = SkSVC(**self.kwargs)
         self.result_type = 'classification'
@@ -137,6 +146,7 @@ class LinearSVMRegressor(SkLearnModel):
     Wrapper of sklearn.svm.LinearSVR
     """
     def __init__(self, **kwargs):
+        super(LinearSVMRegressor, self).__init__()
         self.kwargs = kwargs
         self.model = SkSVR(**self.kwargs)
         self.result_type = 'regression'
@@ -151,9 +161,15 @@ class MLPClassifier(SkLearnModel):
     Wrapper of sklearn.neural_network.MLPClassification
     """
     def __init__(self, **kwargs):
+        super(MLPClassifier, self).__init__()
         self.kwargs = kwargs
         self.model = SkMLPC(**self.kwargs)
         self.result_type = 'classification'
+        self.result_type = 'classification'
+    
+    def _fit(self, x, y, **kwargs):
+        y = y.flatten()
+        self.model.fit(x, y, **kwargs)        
     
     def copy(self):
         return MLPClassifier(**self.kwargs)
@@ -165,9 +181,15 @@ class MLPRegressor(SkLearnModel):
     Wrapper of sklearn.neural_network.MLPRegressor
     """
     def __init__(self, **kwargs):
+        super(MLPRegressor, self).__init__()
         self.kwargs = kwargs
         self.model = SkMLPR(**self.kwargs)
         self.result_type = 'regression'
+        self.result_type = 'regression'
+    
+    def _fit(self, x, y, **kwargs):
+        y = y.flatten()
+        self.model.fit(x, y, **kwargs)
     
     def copy(self):
         return MLPRegressor(**self.kwargs)
@@ -179,6 +201,7 @@ class DecisionTreeClassifier(SkLearnModel):
     Wrapper of sklearn.tree.DecisionTreeClassifier
     """
     def __init__(self, **kwargs):
+        super(DecisionTreeClassifier, self).__init__()
         self.kwargs = kwargs
         self.model = SkDecTreeC(**self.kwargs)
         self.result_type = 'classification'
@@ -199,6 +222,7 @@ class DecisionTreeRegressor(SkLearnModel):
     Wrapper of sklearn.tree.DecisionTreeRegressor
     """
     def __init__(self, **kwargs):
+        super(DecisionTreeRegressor, self).__init__()
         self.kwargs = kwargs
         self.model = SkDecTreeR(**self.kwargs)
         self.result_type = 'regression'
@@ -207,9 +231,7 @@ class DecisionTreeRegressor(SkLearnModel):
         p = super().predict(x)
         if len(p.shape) == 1:
             return p.reshape((len(p), 1))
-
         return p
     
     def copy(self):
         return DecisionTreeRegressor(**self.kwargs)
-    
