@@ -6,14 +6,18 @@ from sklearn import datasets
 from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
-from tensorflow.examples.tutorials.mnist import input_data
+
+# Get MNIST dataset
+import tensorflow as tf
+# from tensorflow.examples.tutorials.mnist import input_data
 
 import ensemble_factory as ef
 import sys
 
 from genetic import Genetic, make_default_eval, make_default_base_initialize, make_joint_crossover, make_boost_crossover, make_simple_stack_crossover, bag_crossover, make_mutator, make_uniform_child_generator, make_random_child_generator
 
-mnist = input_data.read_data_sets("MNIST_data/", one_hot=False)
+# mnist = input_data.read_data_sets("MNIST_data/", one_hot=False)
+(x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data()
 
 def downsample(images):
     downsampled_images = []
@@ -27,17 +31,17 @@ def downsample(images):
         downsampled_images.append(new_img)
     return downsampled_images
 
-downsampled_train = downsample(mnist.train.images)
-downsampled_test = downsample(mnist.test.images)
+downsampled_train = downsample(x_train)
+downsampled_test = downsample(x_test)
 
 trX = np.vstack([img.reshape(-1,) for img in downsampled_train])
-trY = mnist.train.labels
+trY = y_train
 
 trX = trX[:int(len(trX)/10)]
 trY = trY[:int(len(trY)/10)]
 
 teX = np.vstack([img.reshape(-1,) for img in downsampled_test])
-teY = mnist.test.labels
+teY = y_test
 
 oh_trY, oh_teY = [], []
 for y in trY:
